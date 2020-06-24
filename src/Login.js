@@ -1,6 +1,27 @@
 import React, { Component } from 'react';
 import fire from './config/Fire';
+import firebase from 'firebase'
+import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth"
+import * as firebaseui from 'firebaseui'
+import 'firebase/auth'
 // import { Link } from 'react-router-dom';
+
+
+const uiConfig = {
+  signInflow: "popup",
+  signInOptions: [
+    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+    firebase.auth.FacebookAuthProvider.PROVIDER_ID
+  ],
+  callbacks: {
+    signInSuccess: () => false
+  }
+}
+
+var ui = new firebaseui.auth.AuthUI(fire.auth());
+
+ui.start('#firebaseui-auth-container', uiConfig)
+
 
 class Login extends Component {
   constructor(props) {
@@ -8,11 +29,19 @@ class Login extends Component {
 
     this.state = {
       email: '',
-      password: ''
+      password: '',
+      isSignedIn: false
     }
+
     this.handleChange = this.handleChange.bind(this)
     this.login = this.login.bind(this)
     this.signup = this.signup.bind(this)
+  }
+
+  componentDidMount = () => {
+    fire.auth().onAuthStateChanged(user => {
+      this.setState({ isSignedIn: !!user })
+    })
   }
 
   login(e) {
@@ -55,6 +84,14 @@ class Login extends Component {
           <button onClick={this.signup} className='signup-btn'>Signup</button>
         </form>
 
+        {this.state.isSignedIn ? (
+          <div> Signed In! </div>
+        ) : (
+            <StyledFirebaseAuth
+              uiConfig={uiConfig}
+              firebaseAuth={fire.auth()}
+            />
+          )}
       </div>
     )
   }
